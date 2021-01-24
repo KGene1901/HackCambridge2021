@@ -68,7 +68,7 @@ def train_net(epoch_size, data_path, repeat_size, ckpoint_cb, sink_mode):
     # Create training dataset
     ds_train = create_dataset(True, training_path, 32, repeat_size)
     # Initialise model
-    model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()})
+    model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()}, amp_level="O3")
     model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()], dataset_sink_mode=sink_mode)
 
 if __name__ == '__main__':
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     learning_r = 0.01
     momentum = 0.9
     epoch_size = 1
-    training_path = r"./cifar-training"
+    training_path = r'./cifar-training'
     dataset_size = 1
 
     # define network to use
