@@ -9,7 +9,6 @@ from mindspore import context
 import mindspore.dataset as ds
 import mindspore.dataset.vision.c_transforms as C
 import mindspore.dataset.transforms.c_transforms as C2
-from mindspore.dataset.vision import Inter
 from mindspore import dtype as mstype
 import mindspore.nn as nn
 from mindspore.common.initializer import Normal
@@ -22,13 +21,6 @@ from mindspore import load_checkpoint, load_param_into_net
 from resnet import resnet50 
 
 def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parallel_workers=1):
-    """ create dataset for train or test
-    Args:
-        data_path: Data path
-        batch_size: The number of data records in each group
-        repeat_size: The number of replicated data records
-        num_parallel_workers: The number of parallel workers
-    """
     # define dataset
     cifar_ds = ds.Cifar10Dataset(data_path)
 
@@ -91,7 +83,6 @@ if __name__ == '__main__':
     momentum = 0.9
     epoch_size = 1
     training_path = r"./cifar-training"
-    testing_path = r"./cifar-testing"
     dataset_size = 1
 
     # define network to use
@@ -106,12 +97,5 @@ if __name__ == '__main__':
     config_ck = CheckpointConfig(save_checkpoint_steps=1875, keep_checkpoint_max=10)
     # apply params at checkpoint
     ckpoint = ModelCheckpoint(prefix="checkpoint_resnet_cifar10", config=config_ck)
-
-    # path = r'./MindSpore_train_images_dataset'
-    # files = os.listdir(path)
-    # pattern = 'data_batch*.bin'
-    # for file in files:
-    #     if fnmatch.fnmatch(file, pattern):
-            # training_path = path+'/'+file
 
     train_net(epoch_size, training_path, dataset_size, ckpoint, dataset_sink_mode)
