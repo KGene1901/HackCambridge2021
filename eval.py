@@ -28,7 +28,8 @@ def test_net(network, data_path):
     # loss = CrossEntropyLoss(config)
 
     net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
-    model = Model(resnet, net_loss, metrics={"Accuracy": Accuracy()}, amp_level="O3")
+    model = Model(resnet, net_loss, metrics={"Accuracy": Accuracy()})
+    # model = Model(resnet, net_loss, metrics={"Accuracy": Accuracy()}, amp_level="O3")
     acc = model.eval(ds_eval, dataset_sink_mode=False)
     print("============== Accuracy:{} ==============".format(acc))
 

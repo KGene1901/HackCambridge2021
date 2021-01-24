@@ -19,6 +19,23 @@ from mindspore.train.callback import LossMonitor
 from mindspore import Model
 from mindspore import load_checkpoint, load_param_into_net
 from model_zoo.official.cv.resnet.src.resnet import resnet50 
+from mindspore.train.callback import Callback 
+
+class Evalcb(cb):
+    def __init__(self, model, eval_ds, eval_per_epoch, epoch_per_eval):
+        self.model = model
+        self.eval_dataset = eval_dataset
+        self.eval_per_epoch = eval_per_epoch
+        self.epoch_per_eval = epoch_per_eval
+
+    def epoch_end(self, run_context):
+        cb_param = run_context.original_args()
+        cur_epoch = cb_param.cur_epoch_num
+        if cur_epoch % self.eval_per_epoch == 0:
+            acc = self.model.eval(self.eval_dataset, dataset_sink_mode=False)
+            self.epoch_per_eval["epoch"].append(cur_epoch)
+            self.epoch_per_eval["acc"].append(acc["Accuracy"])
+            print(acc)
 
 def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parallel_workers=1):
     # define dataset
@@ -62,14 +79,17 @@ def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parall
 
     return cifar_ds
 
-def train_net(epoch_size, data_path, repeat_size, ckpoint_cb, sink_mode):
+def train_net(epoch_size, data_path, eval_per_epoch, repeat_size, ckpoint_cb, sink_mode):
     """define the training method"""
     print("============== Starting Training ==============")
     # Create training dataset
     ds_train = create_dataset(True, training_path, 32, repeat_size)
     # Initialise model
-    model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()}, amp_level="O3") # this will not work for CPU
-    model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()], dataset_sink_mode=sink_mode)
+    model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()})
+    # model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()}, amp_level="O3") # this will not work for CPU
+    epoch_per_eval = {"epoch":[], "acc":[]}
+    eval_cb =Evalcb(model, ds_train, eval_per_epoch, epoch_per_eval)
+    model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor(), eval_cb], dataset_sink_mode=sink_mode)
 
 if __name__ == '__main__':
     
@@ -83,9 +103,10 @@ if __name__ == '__main__':
     dataset_sink_mode = not args.device_target == "CPU"
     learning_r = 0.01
     momentum = 0.9
-    epoch_size = 1
+    epoch_size = 4
     training_path = r'./cifar-training'
     dataset_size = 1
+    eval_per_epoch = 2
 
     # define network to use
     resnet = resnet50()
@@ -96,8 +117,8 @@ if __name__ == '__main__':
     net_opt = nn.Momentum(filter(lambda x: x.requires_grad, resnet.get_parameters()), learning_r, momentum)
 
     # set params at checkpoint
-    config_ck = CheckpointConfig(save_checkpoint_steps=1875, keep_checkpoint_max=10)
+    config_ck = CheckpointConfig(save_checkpoint_steps=100, keep_checkpoint_max=10)
     # apply params at checkpoint
     ckpoint = ModelCheckpoint(prefix="checkpoint_resnet_cifar10", config=config_ck)
 
-    train_net(epoch_size, training_path, dataset_size, ckpoint, dataset_sink_mode)
+    train_net(epoch_size, training_path, eval_per_epoch, dataset_size, ckpoint, dataset_sink_mode)
