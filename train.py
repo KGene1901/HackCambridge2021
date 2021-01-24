@@ -95,8 +95,13 @@ if __name__ == '__main__':
     
     # Initialise important training params
     parser = argparse.ArgumentParser(description='MindSpore Resnet50 Training')
+    parser.add_argument('--debug', type=bool, default=False)
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'], help='device where the code will be implemented (default: CPU)')
     args = parser.parse_args()
+    if args.debug:
+        context.set_context(mode=context.PYNATIVE_MODE, device_target=args.device_target)
+    else:
+        context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target)
     context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target)
     # this next line can't be ran on a CPU
     context.set_context(enable_graph_kernel=True)
