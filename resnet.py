@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ============================================================================
+
+# Link to Github repo: https://github.com/mindspore-ai/mindspore/blob/ca053f0cbcafc2a0107bda6a7016140a01437d13/model_zoo/official/cv/resnet/src/resnet.py
+
 """ResNet."""
 import numpy as np
 import mindspore.nn as nn
