@@ -1,7 +1,8 @@
+import argparse
 from model_zoo.official.cv.resnet.src.resnet import resnet50 
 from main import create_dataset
 from model_zoo.official.nlp.gpt.src.gpt import CrossEntropyLoss
-from mindspore import Model, load_checkpoint
+from mindspore import Model, load_checkpoint, context
 from mindspore.nn.metrics import Accuracy
 from mindspore.nn.loss import SoftmaxCrossEntropyWithLogits
 
@@ -32,6 +33,10 @@ def test_net(network, data_path):
     print("============== Accuracy:{} ==============".format(acc))
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='MindSpore Resnet50 Training')
+    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'], help='device where the code will be implemented (default: CPU)')
+    args = parser.parse_args()
+    context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target)
     resnet = resnet50()
     testing_path = r'./cifar-testing'
     test_net(resnet, testing_path)

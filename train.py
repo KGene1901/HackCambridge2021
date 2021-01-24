@@ -68,16 +68,18 @@ def train_net(epoch_size, data_path, repeat_size, ckpoint_cb, sink_mode):
     # Create training dataset
     ds_train = create_dataset(True, training_path, 32, repeat_size)
     # Initialise model
-    model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()}, amp_level="O3")
+    model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()}, amp_level="O3") # this will not work for CPU
     model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()], dataset_sink_mode=sink_mode)
 
 if __name__ == '__main__':
     
     # Initialise important training params
-    parser = argparse.ArgumentParser(description='MindSpore Resnet50 Example')
+    parser = argparse.ArgumentParser(description='MindSpore Resnet50 Training')
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'], help='device where the code will be implemented (default: CPU)')
     args = parser.parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target)
+    # this next line can't be ran on a CPU
+    context.set_context(enable_graph_kernel=True)
     dataset_sink_mode = not args.device_target == "CPU"
     learning_r = 0.01
     momentum = 0.9
