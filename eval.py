@@ -1,6 +1,6 @@
-from resnet import resnet50 
+from model_zoo.official.cv.resnet.src.resnet import resnet50 
 from main import create_dataset
-from gpt.py import CrossEntropyLoss
+from model_zoo.official.nlp.gpt.src.gpt import CrossEntropyLoss
 from mindspore import Model, load_checkpoint
 from mindspore.nn.metrics import Accuracy
 from mindspore.nn.loss import SoftmaxCrossEntropyWithLogits

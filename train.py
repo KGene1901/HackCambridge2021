@@ -18,7 +18,7 @@ from mindspore.nn.metrics import Accuracy
 from mindspore.train.callback import LossMonitor
 from mindspore import Model
 from mindspore import load_checkpoint, load_param_into_net
-from resnet import resnet50 
+from model_zoo.official.cv.resnet.src.resnet import resnet50 
 
 def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parallel_workers=1):
     # define dataset
