@@ -21,7 +21,7 @@ from mindspore import load_checkpoint, load_param_into_net
 from model_zoo.official.cv.resnet.src.resnet import resnet50 
 from mindspore.train.callback import Callback 
 
-class Evalcb(cb):
+class Evalcb(Callback):
     def __init__(self, model, eval_ds, eval_per_epoch, epoch_per_eval):
         self.model = model
         self.eval_dataset = eval_ds
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     dataset_sink_mode = not args.device_target == "CPU"
     learning_r = 0.01
     momentum = 0.9
-    epoch_size = 4
+    epoch_size = 3
     training_path = args.datapath
     dataset_size = 1
     eval_per_epoch = 2
@@ -123,7 +123,7 @@ if __name__ == '__main__':
     net_opt = nn.Momentum(filter(lambda x: x.requires_grad, resnet.get_parameters()), learning_r, momentum)
 
     # set params at checkpoint
-    config_ck = CheckpointConfig(save_checkpoint_steps=100, keep_checkpoint_max=10)
+    config_ck = CheckpointConfig(save_checkpoint_steps=10, keep_checkpoint_max=5)
     # apply params at checkpoint
     ckpoint = ModelCheckpoint(prefix="checkpoint_resnet_cifar10", config=config_ck)
 
