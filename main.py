@@ -4,7 +4,6 @@ https://www.mindspore.cn/tutorial/training/en/r1.1/quick_start/quick_start.html
 https://www.mindspore.cn/tutorial/training/en/r1.0/advanced_use/cv_resnet50.html
 '''
 import os
-
 import argparse
 from mindspore import context
 import mindspore.dataset as ds
@@ -80,6 +79,18 @@ def train_net(epoch_size, data_path, repeat_size, ckpoint_cb, sink_mode):
     model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()})
     model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()], dataset_sink_mode=sink_mode)
 
+def test_net(network,model,data_path):
+    """define the evaluation method"""
+    print("============== Starting Testing ==============")
+    #load the saved model for evaluation
+    param_dict = load_checkpoint("checkpoint_lenet-1_1875.ckpt")
+    #load parameter to the network
+    load_param_into_net(network, param_dict)
+    #load testing dataset
+    ds_eval = create_dataset(False, data_path) # test
+    acc = model.eval(ds_eval, dataset_sink_mode=False)
+    print("============== Accuracy:{} ==============".format(acc))
+
 if __name__ == '__main__':
     
     # Initialise important training params
@@ -116,3 +127,4 @@ if __name__ == '__main__':
             # training_path = path+'/'+file
 
     train_net(epoch_size, training_path, dataset_size, ckpoint, dataset_sink_mode)
+    test_net(resnet, model, testing_path)
