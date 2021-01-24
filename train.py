@@ -70,3 +70,13 @@ def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parall
     cifar_ds = cifar_ds.repeat(repeat_size)
 
     return cifar_ds
+
+def train_net(epoch_size, data_path, repeat_size, ckpoint_cb, sink_mode):
+    """define the training method"""
+    print("============== Starting Training ==============")
+    # Create training dataset
+    ds_train = create_dataset(True, training_path, 32, repeat_size)
+    # Initialise model
+    model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()})
+    model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()], dataset_sink_mode=sink_mode)
+
