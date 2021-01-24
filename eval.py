@@ -6,11 +6,11 @@ from mindspore import Model, load_checkpoint, context
 from mindspore.nn.metrics import Accuracy
 from mindspore.nn.loss import SoftmaxCrossEntropyWithLogits
 
-def test_net(network, data_path):
+def test_net(network, data_path, ckpt):
     """define the evaluation method"""
     print("============== Starting Testing ==============")
     #load the saved model for evaluation
-    load_checkpoint("checkpoint_resnet_cifar10-1_50.ckpt", net=network)
+    load_checkpoint(ckpt, net=network)
     #load testing dataset
     ds_eval = create_dataset(False, data_path)
 
@@ -36,8 +36,10 @@ def test_net(network, data_path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MindSpore Resnet50 Training')
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'], help='device where the code will be implemented (default: CPU)')
+    parser.add_argument('--datapath', type=str)
+    parser.add_argument('--chkpt', type=str, default="checkpoint_resnet_cifar10-1_50.ckpt")
     args = parser.parse_args()
     context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target)
     resnet = resnet50()
-    testing_path = r'./cifar-testing'
-    test_net(resnet, testing_path)
+    testing_path = args.chkpt
+    test_net(resnet, testing_path, args.datapath)

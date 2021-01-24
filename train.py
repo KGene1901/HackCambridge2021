@@ -24,7 +24,7 @@ from mindspore.train.callback import Callback
 class Evalcb(cb):
     def __init__(self, model, eval_ds, eval_per_epoch, epoch_per_eval):
         self.model = model
-        self.eval_dataset = eval_dataset
+        self.eval_dataset = eval_ds
         self.eval_per_epoch = eval_per_epoch
         self.epoch_per_eval = epoch_per_eval
 
@@ -97,6 +97,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='MindSpore Resnet50 Training')
     parser.add_argument('--debug', type=bool, default=False)
     parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'], help='device where the code will be implemented (default: CPU)')
+    parser.add_argument('--datapath', type=str)
     args = parser.parse_args()
     if args.debug:
         context.set_context(mode=context.PYNATIVE_MODE, device_target=args.device_target)
@@ -109,7 +110,7 @@ if __name__ == '__main__':
     learning_r = 0.01
     momentum = 0.9
     epoch_size = 4
-    training_path = r'./cifar-training'
+    training_path = args.datapath
     dataset_size = 1
     eval_per_epoch = 2
 
