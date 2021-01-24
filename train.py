@@ -37,7 +37,7 @@ class Evalcb(Callback):
             self.epoch_per_eval["acc"].append(acc["Accuracy"])
             print(acc)
 
-def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parallel_workers=1):
+def create_dataset(args, training, data_path, batch_size=32, repeat_size=1, num_parallel_workers=1):
     # define dataset
     cifar_ds = ds.Cifar10Dataset(data_path)
 
@@ -50,12 +50,18 @@ def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parall
 
     # define map operations
     random_crop_op = C.RandomCrop((32, 32), (4, 4, 4, 4)) # padding_mode default CONSTANT
+    if args.debug:
+        print(f'Random crop op: {random_crop_op}')
     random_horizontal_op = C.RandomHorizontalFlip()
     resize_op = C.Resize((resize_height, resize_width)) # interpolation default BILINEAR
     rescale_op = C.Rescale(rescale, shift)
     normalize_op = C.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+    if args.debug:
+        print(f'Normalize operation: {normalize_op}')
     changeswap_op = C.HWC2CHW()
     type_cast_op = C2.TypeCast(mstype.int32)
+    if args.debug:
+        print(f'Type cast operation: {type_cast_op}')
 
     c_trans = []
 
@@ -63,6 +69,9 @@ def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parall
         c_trans = [random_crop_op, random_horizontal_op]
 
     c_trans += [resize_op, rescale_op, normalize_op, changeswap_op]
+    if args.debug:
+        print(f'C transform: {c_trans}')
+
 
     # apply map operations on images
     cifar_ds = cifar_ds.map(operations=type_cast_op, input_columns="label")
@@ -70,6 +79,7 @@ def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parall
 
     # apply shuffle ops
     cifar_ds = cifar_ds.shuffle(buffer_size=10)
+
 
     # apply batch ops
     cifar_ds = cifar_ds.batch(batch_size=batch_size, drop_remainder=True)
@@ -79,11 +89,11 @@ def create_dataset(training, data_path, batch_size=32, repeat_size=1, num_parall
 
     return cifar_ds
 
-def train_net(epoch_size, data_path, eval_per_epoch, repeat_size, ckpoint_cb, sink_mode):
+def train_net(args, epoch_size, data_path, eval_per_epoch, repeat_size, ckpoint_cb, sink_mode):
     """define the training method"""
     print("============== Starting Training ==============")
     # Create training dataset
-    ds_train = create_dataset(True, training_path, 32, repeat_size)
+    ds_train = create_dataset(args, True, training_path, 32, repeat_size)
     # Initialise model
     model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()})
     # model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()}, amp_level="O3") # this will not work for CPU
@@ -127,4 +137,4 @@ if __name__ == '__main__':
     # apply params at checkpoint
     ckpoint = ModelCheckpoint(prefix="checkpoint_resnet_cifar10", config=config_ck)
 
-    train_net(epoch_size, training_path, eval_per_epoch, dataset_size, ckpoint, dataset_sink_mode)
+    train_net(args, epoch_size, training_path, eval_per_epoch, dataset_size, ckpoint, dataset_sink_mode)
