@@ -80,3 +80,39 @@ def train_net(epoch_size, data_path, repeat_size, ckpoint_cb, sink_mode):
     model = Model(resnet, net_loss, net_opt, metrics={"Accuracy": Accuracy()})
     model.train(epoch_size, ds_train, callbacks=[ckpoint_cb, LossMonitor()], dataset_sink_mode=sink_mode)
 
+if __name__ == '__main__':
+    
+    # Initialise important training params
+    parser = argparse.ArgumentParser(description='MindSpore Resnet50 Example')
+    parser.add_argument('--device_target', type=str, default="CPU", choices=['Ascend', 'GPU', 'CPU'], help='device where the code will be implemented (default: CPU)')
+    args = parser.parse_args()
+    context.set_context(mode=context.GRAPH_MODE, device_target=args.device_target)
+    dataset_sink_mode = not args.device_target == "CPU"
+    learning_r = 0.01
+    momentum = 0.9
+    epoch_size = 1
+    training_path = r"./cifar-training"
+    testing_path = r"./cifar-testing"
+    dataset_size = 1
+
+    # define network to use
+    resnet = resnet50()
+
+    # loss function
+    net_loss = SoftmaxCrossEntropyWithLogits(sparse=True, reduction='mean')
+    # optimisation function
+    net_opt = nn.Momentum(filter(lambda x: x.requires_grad, resnet.get_parameters()), learning_r, momentum)
+
+    # set params at checkpoint
+    config_ck = CheckpointConfig(save_checkpoint_steps=1875, keep_checkpoint_max=10)
+    # apply params at checkpoint
+    ckpoint = ModelCheckpoint(prefix="checkpoint_resnet_cifar10", config=config_ck)
+
+    # path = r'./MindSpore_train_images_dataset'
+    # files = os.listdir(path)
+    # pattern = 'data_batch*.bin'
+    # for file in files:
+    #     if fnmatch.fnmatch(file, pattern):
+            # training_path = path+'/'+file
+
+    train_net(epoch_size, training_path, dataset_size, ckpoint, dataset_sink_mode)
