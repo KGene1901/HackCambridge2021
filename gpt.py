@@ -27,6 +27,34 @@ from mindspore.common.initializer import TruncatedNormal, initializer, Normal
 from mindspore.ops import operations as P
 from mindspore.ops import functional as F
 
+class GPTConfig:
+    """
+    GPT config class which defines the model size
+    """
+    def __init__(self,
+                 batch_size=32,
+                 seq_length=1024,
+                 vocab_size=50257,
+                 embedding_size=768,
+                 num_layers=12,
+                 num_heads=12,
+                 expand_ratio=4,
+                 post_layernorm_residual=False,
+                 dropout_rate=0.1,
+                 compute_dtype=mstype.float16,
+                 use_past=False):
+        self.batch_size = batch_size
+        self.seq_length = seq_length
+        self.vocab_size = vocab_size
+        self.embedding_size = embedding_size
+        self.num_layers = num_layers
+        self.num_heads = num_heads
+        self.expand_ratio = expand_ratio
+        self.post_layernorm_residual = post_layernorm_residual
+        self.dropout_rate = dropout_rate
+        self.compute_dtype = compute_dtype
+        self.use_past = use_past
+
 class CrossEntropyLoss(nn.Cell):
     """
     Calculate the cross entropy loss
